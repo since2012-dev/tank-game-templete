@@ -1,7 +1,7 @@
 --====================================================
 -- MODULE
 --====================================================
-local Enemy = {}
+local Archer = {}
 
 --====================================================
 -- DEPENDICIES
@@ -28,6 +28,10 @@ local DIRECTIONS = {
 	ATK_BACK = -0.3 * pi,
 	ATK_MAX = 0.3 * pi,
 }
+local SPEEDS_FAC = {
+	ATK = 0.5,
+	HURT = 0.5,
+}
 
 --====================================================
 -- MODULE STATE
@@ -40,13 +44,13 @@ local DIRECTIONS = {
 --====================================================
 -- CLASS
 --====================================================
-Enemy.__index = Enemy
+Archer.__index = Archer
 
 ------------------------------------------------------
 -- Constructor
 ------------------------------------------------------
-function Enemy:new(sheet)
-	local self = setmetatable({}, Enemy)
+function Archer:new(sheet)
+	local self = setmetatable({}, Archer)
 
 	-- State
 	self.state = STATES.IDLE
@@ -55,6 +59,7 @@ function Enemy:new(sheet)
 	self.x = 0
 	self.y = 0
 	self.speed = 150
+	self.speedFac = 1
 	self.direction = 0
 	self.velocity = { x = 0, y = 0 }
 
@@ -78,7 +83,7 @@ end
 ------------------------------------------------------
 -- Lifecycle
 ------------------------------------------------------
-function Enemy:spawn(spawnX, spawnY)
+function Archer:spawn(spawnX, spawnY)
 	-- I add this func to reset states of the player when he dies, instead of create new player
 	-- Movement
 	self.x = spawnX
@@ -91,46 +96,49 @@ function Enemy:spawn(spawnX, spawnY)
 	self.damage = 25
 end
 
-function Enemy:update(Target, dt)
+function Archer:update(Target, dt)
 	-- Update state
 	self:updateState(Target.x, Target.y)
 	
 	-- Move
-	if not self.tweening then self:pointToward(Target.x, Target.y); self:moveAndSlide(dt) end
+	if not self.tweening then self:pointToward(Target.x, Target.y) end
+	self:moveAndSlide(dt)
 
 	-- Animate
 	self:animate()
 end
 
-function Enemy:draw()
+function Archer:draw()
 	local s = 0.4
+	gr.setColor(0, 0, 1)
 	gr.draw(self.texture, self.x, self.y, self.direction + self.body.direction, s, s, self.offset.x, self.offset.y)
+	gr.setColor(1, 0, 0)
 end
 
 ------------------------------------------------------
 -- State
 ------------------------------------------------------
-function Enemy:updateState(targetX, targetY)
+function Archer:updateState(targetX, targetY)
+	-- Move
+	self.state = STATES.WALK
+	
 	-- Stop if tweening
-	if self.tweening then return end
+	if self.tweening then return; else self.speedFac = 1 end -- Reset speedFac if not tweening
 
 	-- Attack
 	if lume.distance(self.x, self.y, targetX, targetY, true) < 900 then
-		self:playAnim(STATES.ATTACK)
+		self:playAnim(STATES.ATTACK, SPEEDS_FAC.ATK)
 	end
-	
-	-- Check if moving
-	self.state = STATES.WALK
 end
 
 ------------------------------------------------------
 -- Movement
 ------------------------------------------------------
-function Enemy:pointToward(targetX, targetY)
+function Archer:pointToward(targetX, targetY)
 	self.direction = lume.angle(self.x, self.y, targetX, targetY)
 end
 
-function Enemy:moveAndSlide(dt)
+function Archer:moveAndSlide(dt)
 	-- Forward
 	local forwardX = cos(self.direction)
 	local forwardY = sin(self.direction)
@@ -139,8 +147,8 @@ function Enemy:moveAndSlide(dt)
 	local dx, dy = forwardX, forwardY
 	
 	-- Velocity
-	self.velocity.x = dx * self.speed
-	self.velocity.y = dy * self.speed
+	self.velocity.x = dx * self.speed * self.speedFac
+	self.velocity.y = dy * self.speed * self.speedFac
 
 	-- Apply velocity
 	self.x = self.x + self.velocity.x * dt
@@ -150,7 +158,7 @@ end
 ------------------------------------------------------
 -- Combat
 ------------------------------------------------------
-function Enemy:attack(Target)
+function Archer:attack(Target)
 	--[[
 	Target is an enemy tbl, i will change it later, and i will add a code to it
 	main script take the nearest enemy tbl from enemy-manager script, and it gives this val to the player
@@ -158,7 +166,7 @@ function Enemy:attack(Target)
 	Target:hurt(self.damage + rn(-5, 5)) -- Todo: set the dmg to: height for near targets, low for far ones
 end
 
-function Enemy:hurt(amount)
+function Archer:hurt(amount)
 	-- Todo: add hurt animation
 	self.hp = self.hp - amount
 end
@@ -166,12 +174,13 @@ end
 ------------------------------------------------------
 -- Animation
 ------------------------------------------------------
-function Enemy:animate()
+function Archer:animate()
 end
 
-function Enemy:playAnim(animState)	
+function Archer:playAnim(animState, speedFactor)
 	-- State
 	self.state = animState
+	self.speedFac = speedFactor
 
 	-- Cached vals
 	local preDir = self.body.direction
@@ -193,4 +202,4 @@ end
 --====================================================
 -- RETURN MODULE
 --====================================================
-return Enemy
+return Archer

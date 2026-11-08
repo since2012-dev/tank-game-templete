@@ -128,7 +128,9 @@ function Player:updateState()
 	-- Move / Idle
 	local isValidVel = self.velocity.x ~= 0 or self.velocity.y ~= 0
 	local isMoving = self.input ~= 0 or isValidVel
-	if isMoving then self.state = STATES.WALK; else self.state = STATES.IDLE end
+	if isMoving then
+		if !self.tweening then self.state = STATES.WALK end
+	else self.state = STATES.IDLE end
 
 	------ Check for special states ------
 	-- Stop if tweening
@@ -136,8 +138,7 @@ function Player:updateState()
 
 	-- Attack
 	if keyboard.isDown("lshift") then
-		self.speedFac = SPEEDS_FAC.ATK
-		self:playAnim(STATES.ATTACK)
+		self:playAnim(STATES.ATTACK, SPEEDS_FAC.ATK)
 	end
 end
 
@@ -195,9 +196,10 @@ end
 function Player:animate()
 end
 
-function Player:playAnim(animState)	
+function Player:playAnim(animState, speedFactor)
 	-- State
 	self.state = animState
+	self.speedFac = speedFactor
 
 	-- Cached vals
 	local preDir = self.body.direction
