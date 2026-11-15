@@ -12,7 +12,10 @@ local newImg = love.graphics.newImage
 -- EXPORTED API
 --====================================================
 function Assets.load()
-  Assets.arrow = newImg("assets/arrow.png")
+  Assets.player = newImg("assets/player/player.png")
+  Assets.runner = newImg("assets/enemies/runner.png")
+  Assets.archer = newImg("assets/enemies/archer.png")
+  Assets.tank = newImg("assets/enemies/tank.png")
 end
 
 --====================================================

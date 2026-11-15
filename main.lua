@@ -43,7 +43,7 @@ function love.load()
   Assets.load()
   
   -- Instances
-  Player = PlayerMeta:new(Assets.arrow)
+  Player = PlayerMeta:new(Assets.player)
   
   -- Entities
   Player:spawn(100, 100)

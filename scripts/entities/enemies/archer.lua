@@ -9,6 +9,7 @@ local Archer = {}
 local lerp = require "utils.lerp"
 local lume = require "libs.lume"
 local globals = require "utils.globals"
+local globalFuncs = require "scripts.entities.global-functions"
 local flux = require "libs.flux"
 local CONS = require "utils.constants"
 
@@ -29,8 +30,8 @@ local DIRECTIONS = {
 	ATK_MAX = 0.3 * pi,
 }
 local SPEEDS_FAC = {
-	ATK = 0.5,
-	HURT = 0.5,
+	ATK = 0,
+	HURT = 0,
 }
 
 --====================================================
@@ -75,6 +76,7 @@ function Archer:new(sheet)
 		y = self.texture:getHeight() / 2,
 	}
 	self.tweens = { dir = nil }
+	self.tweensStartVals = { dir = 0 }
 	self.tweening = false
 
 	return self
@@ -102,17 +104,14 @@ function Archer:update(Target, dt)
 	
 	-- Move
 	if not self.tweening then self:pointToward(Target.x, Target.y) end
-	self:moveAndSlide(dt)
+	if self.speedFac > 0 then self:moveAndSlide(dt) end
 
 	-- Animate
 	self:animate()
 end
 
 function Archer:draw()
-	local s = 0.4
-	gr.setColor(0, 0, 1)
-	gr.draw(self.texture, self.x, self.y, self.direction + self.body.direction, s, s, self.offset.x, self.offset.y)
-	gr.setColor(1, 0, 0)
+	globalFuncs.draw(self)
 end
 
 ------------------------------------------------------
@@ -184,6 +183,7 @@ function Archer:playAnim(animState, speedFactor)
 
 	-- Cached vals
 	local preDir = self.body.direction
+	self.tweensStartVals.dir = self.direction
 	
 	-- Play
 	if self.state == STATES.ATTACK then

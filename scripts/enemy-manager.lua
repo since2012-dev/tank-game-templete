@@ -46,15 +46,15 @@ local maxTanks =  2
 function EnemyManager.load()
   -- Instances
   for i = 1, maxRunners do
-    table.insert(runners, RunnerMeta:new(Assets.arrow, globals.Player))
+    table.insert(runners, RunnerMeta:new(Assets.runner, globals.Player))
   end
 
   for i = 1, maxArchers do
-    table.insert(archers, ArcherMeta:new(Assets.arrow, globals.Player))
+    table.insert(archers, ArcherMeta:new(Assets.archer, globals.Player))
   end
 
   for i = 1, maxTanks do
-    table.insert(tanks, TankMeta:new(Assets.arrow, globals.Player))
+    table.insert(tanks, TankMeta:new(Assets.tank, globals.Player))
   end
 
   -- Spawn

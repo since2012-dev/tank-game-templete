@@ -10,6 +10,7 @@ local lerp = require "utils.lerp"
 local lume = require "libs.lume"
 local flux = require "libs.flux"
 local globals = require "utils.globals"
+local globalFuncs = require "scripts.entities.global-functions"
 local CONS = require "utils.constants"
 
 --====================================================
@@ -79,6 +80,7 @@ function Player:new(sheet)
 		y = self.texture:getHeight() / 2,
 	}
 	self.tweens = { dir = nil }
+	self.tweensStartVals = { dir = 0 }
 	self.tweening = false
 
 	return self
@@ -105,15 +107,16 @@ function Player:update(dt)
 	self:updateState()
 	
 	-- Move
-	if not self.tweening then self:pointToward(mx, my, dt) end
-	if self.state == STATES.WALK then self:moveAndSlide(dt) end
+	self:pointToward(mx, my, dt)
+	if not self.tweening then  end
+	if self.state ~= STATES.IDLE and self.speedFac > 0 then self:moveAndSlide(dt) end
 
 	-- Animate
 	self:animate()
 end
 
 function Player:draw()
-	gr.draw(self.texture, self.x, self.y, self.direction + self.body.direction, 1, 1, self.offset.x, self.offset.y)
+	globalFuncs.draw(self)
 end
 
 ------------------------------------------------------
@@ -203,6 +206,7 @@ function Player:playAnim(animState, speedFactor)
 
 	-- Cached vals
 	local preDir = self.body.direction
+	self.tweensStartVals.dir = self.direction
 	
 	-- Play
 	if self.state == STATES.ATTACK then
